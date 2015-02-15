@@ -21,6 +21,10 @@ Command line utility based on liquid-dsp for realtime SDR IQ stream demodulation
     sudo make install
 
 ## usage
+play FM radio recording (deemph filter not used and does not play in stereo)
+
+    cat fm_radio_recording.iq | demod -s 230400 -b 100000 -m FM d=75000 | play -t raw -r 230.4k -esigned-integer -b16 -c 1 -V1 -
+    
 demodulate FSK9600 raw IQ data recording and pipe output to multimon-ng for packet decoding
 
     sox -t wav sdr_fsk9600.wav -esigned-integer -b16  -r 126000 -t raw - | demod -s 126000 -r 48000 -b 4500 -m FM d=3500 | multimon-ng -t raw  -a FSK9600 /dev/stdin
