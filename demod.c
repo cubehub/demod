@@ -198,20 +198,20 @@ int main(int argc, char*argv[]) {
 	firfilt_crcf_set_scale(filter, 2.0f*filter_cutoff_freq);
 
 	// resampler options
-    float resampler_rate = (float)args.resamplerate / (float)args.samplerate;
+	float resampler_rate = (float)args.resamplerate / (float)args.samplerate;
 	msresamp_crcf resampler = msresamp_crcf_create(resampler_rate, filter_attenuation);
 	float resampler_delay = msresamp_crcf_get_delay(resampler);
 
-    // number of input samples (zero-padded)
-    unsigned int resampler_input_len = NUM_SAMPLES + (int)ceilf(resampler_delay) + 10;
-    // output buffer with extra padding
-    unsigned int resampler_output_len = (unsigned int) (2*(float)resampler_input_len * resampler_rate);
+	// number of input samples (zero-padded)
+	unsigned int resampler_input_len = NUM_SAMPLES + (int)ceilf(resampler_delay) + 10;
+	// output buffer with extra padding
+	unsigned int resampler_output_len = (unsigned int) (2*(float)resampler_input_len * resampler_rate);
 
-    float complex c_input[resampler_input_len];
-    float complex c_output[resampler_output_len];
+	float complex c_input[resampler_input_len];
+	float complex c_output[resampler_output_len];
 	unsigned int resampler_output_count = 0;
 
-    // FM demodulator
+	// FM demodulator
 	float kf = (float)args.fm_deviation/(float)args.resamplerate;    // modulation factor
 	freqdem fm_demodulator = freqdem_create(kf);
 	float dem_out[resampler_output_len];
