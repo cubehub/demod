@@ -54,8 +54,8 @@ int main(int argc, char*argv[]) {
 	};
 
 	const char* modulation_opts[] = {
-		[FM_MODULATION] = "FM",
-		[AM_MODULATION] = "AM",
+		[FM_MODULATION] = "fm",
+		[AM_MODULATION] = "am",
 		NULL
 	};
 
