@@ -1,0 +1,8 @@
+[package]
+name = "demod"
+version = "1.0.0"
+authors = ["Andres Vahter <andres.vahter@gmail.com>"]
+
+[dependencies]
+clap = "*"
+libc = "*"
