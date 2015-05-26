@@ -1,6 +1,6 @@
 [package]
 name = "demod"
-version = "1.0.0"
+version = "0.9.0"
 authors = ["Andres Vahter <andres.vahter@gmail.com>"]
 
 [dependencies]
