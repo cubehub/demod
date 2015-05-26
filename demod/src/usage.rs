@@ -58,6 +58,7 @@ pub struct CommandArgs {
     pub samplerate: Option<u32>,
     pub resamplerate: Option<u32>,
     pub inputtype: Option<DataType>,
+    pub outputtype: Option<DataType>,
     pub bandwidth: Option<u32>,
     pub modulation: Option<Modulation>,
 
@@ -94,6 +95,14 @@ pub fn args() -> CommandArgs {
                     .possible_values(&datatypes)
                     .takes_value(true))
 
+                .arg(Arg::with_name("OUTTYPE")
+                    .long("outtype")
+                    .short("o")
+                    .help("demodulator output data type")
+                    .required(true)
+                    .possible_values(&datatypes)
+                    .takes_value(true))
+
                 .arg(Arg::with_name("BANDWIDTH")
                     .long("bandwidth")
                     .help("bandpass filter bandwidth")
@@ -116,6 +125,7 @@ pub fn args() -> CommandArgs {
                     samplerate : None,
                     resamplerate : None,
                     inputtype : None,
+                    outputtype : None,
                     bandwidth : None,
                     modulation : None,
 
@@ -134,6 +144,12 @@ pub fn args() -> CommandArgs {
             match matches.value_of("INTYPE").unwrap() {
                 "f32" => {args.inputtype = Some(F32);},
                 "i16" => {args.inputtype = Some(I16);},
+                _ => unreachable!()
+            }
+
+            match matches.value_of("OUTTYPE").unwrap() {
+                "f32" => {args.outputtype = Some(F32);},
+                "i16" => {args.outputtype = Some(I16);},
                 _ => unreachable!()
             }
 
