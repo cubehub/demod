@@ -82,14 +82,12 @@ impl FirFilterCrcf {
     }
 
     /// push sample into filter object's internal buffer
-    ///  _q      : filter object
     ///  _x      : single input sample
     pub fn push(&self, _x: Complex32) {
         unsafe{ffiliquid::firfilt_crcf_push(self.object, _x)}
     }
 
     /// execute the filter on internal buffer and coefficients
-    ///  _q      : filter object
     ///  _y      : pointer to single output sample
     pub fn execute(&self, _y: *mut Complex32) {
         unsafe{ffiliquid::firfilt_crcf_execute(self.object, _y);}
@@ -97,7 +95,6 @@ impl FirFilterCrcf {
 
     /// execute the filter on a block of input samples; the
     /// input and output buffers may be the same
-    ///  _q      : filter object
     ///  _x      : pointer to input array [size: _n x 1]
     ///  _n      : number of input, output samples
     ///  _y      : pointer to output array [size: _n x 1]
@@ -111,7 +108,6 @@ impl FirFilterCrcf {
     }
 
     /// compute complex frequency response of filter object
-    ///  _q      : filter object
     ///  _fc     : frequency to evaluate
     ///  _h      : pointer to output complex frequency response
     pub fn freqresponse(&self, _fc: f32, _h: *mut Complex32) {
@@ -119,7 +115,6 @@ impl FirFilterCrcf {
     }
 
     /// compute and return group delay of filter object
-    ///  _q      : filter object
     ///  _fc     : frequency to evaluate
     pub fn groupdelay(&self, _fc: f32) -> f32 {
         unsafe{ffiliquid::firfilt_crcf_groupdelay(self.object, _fc)}

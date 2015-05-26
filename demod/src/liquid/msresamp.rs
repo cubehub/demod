@@ -45,13 +45,12 @@ impl MsresampCrcf {
     }
 
     /// execute multi-stage resampler
-    ///  _q      :   msresamp object
     ///  _x      :   input sample array  [size: _nx x 1]
     ///  _nx     :   input sample array size
     ///  _y      :   output sample array [size: variable]
     ///  _ny     :   number of samples written to _y
-    pub fn execute(&self, _x: *mut Complex32, _nx: u32, _y: *mut Complex32, _ny: *mut u32) {
-        unsafe{ffiliquid::msresamp_crcf_execute(self.object, _x, _nx, _y, _ny)};
+    pub fn execute(&self, _x: &mut [Complex32], _nx: u32, _y: &mut [Complex32], _ny: *mut u32) {
+        unsafe{ffiliquid::msresamp_crcf_execute(self.object, _x.as_mut_ptr(), _nx, _y.as_mut_ptr(), _ny)};
     }
 }
 

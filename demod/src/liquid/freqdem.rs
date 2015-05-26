@@ -39,7 +39,6 @@ impl Freqdem {
     }
 
     /// demodulate sample
-    ///  _q      :   frequency modulator object
     ///  _r      :   received signal r(t)
     ///  _m      :   output message signal m(t)
     pub fn demodulate(&self, _r: Complex32, _m: *mut f32) {
@@ -47,12 +46,11 @@ impl Freqdem {
     }
 
     /// demodulate block of samples
-    ///  _q      :   frequency demodulator object
     ///  _r      :   received signal r(t) [size: _n x 1]
     ///  _n      :   number of input, output samples
     ///  _m      :   message signal m(t), [size: _n x 1]
-    pub fn demodulate_block(&self, _r: *mut Complex32, _n: u32, _m: *mut f32) {
-        unsafe{ffiliquid::freqdem_demodulate_block(self.object, _r, _n, _m)};
+    pub fn demodulate_block(&self, _r: &mut [Complex32], _n: u32, _m: &mut [f32]) {
+        unsafe{ffiliquid::freqdem_demodulate_block(self.object, _r.as_mut_ptr(), _n, _m.as_mut_ptr())};
     }
 }
 
