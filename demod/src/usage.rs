@@ -84,8 +84,8 @@ pub fn args() -> CommandArgs {
                     .long("resamplerate")
                     .short("r")
                     .help("IQ data output samplerate")
-                   .required(true)
-                   .takes_value(true))
+                    .required(false)
+                    .takes_value(true))
 
                 .arg(Arg::with_name("INTYPE")
                     .long("intype")
@@ -138,7 +138,9 @@ pub fn args() -> CommandArgs {
         Some("fm") => {
             args.modulation = Some(FM);
             args.samplerate = Some(value_t_or_exit!(matches.value_of("SAMPLERATE"), u32));
-            args.resamplerate = Some(value_t_or_exit!(matches.value_of("RESAMPLERATE"), u32));
+            if matches.is_present("RESAMPLERATE") {
+                args.resamplerate = Some(value_t_or_exit!(matches.value_of("RESAMPLERATE"), u32));
+            }
             args.bandwidth = Some(value_t_or_exit!(matches.value_of("BANDWIDTH"), u32));
 
             match matches.value_of("INTYPE").unwrap() {

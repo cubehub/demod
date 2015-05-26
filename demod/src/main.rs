@@ -65,7 +65,12 @@ fn main() {
 
 
     // resampler options
-	let resampler_rate = args.resamplerate.unwrap() as f32 / args.samplerate.unwrap() as f32;
+    let resampler_rate = if args.resamplerate.is_some() {
+                            args.resamplerate.unwrap() as f32 / args.samplerate.unwrap() as f32
+                        }
+                        else {
+                            1.0_f32
+                        };
 
     let resampler = msresamp::MsresampCrcf::new(resampler_rate, filter_attenuation);
 	let resampler_delay = resampler.get_delay();
@@ -87,7 +92,13 @@ fn main() {
 
 
     // FM demodulator
-    let modulation_factor = args.fmargs.deviation.unwrap() as f32 / args.resamplerate.unwrap() as f32;
+    let modulation_factor = if args.resamplerate.is_some() {
+                                args.fmargs.deviation.unwrap() as f32 / args.resamplerate.unwrap() as f32
+                            }
+                            else {
+                                args.fmargs.deviation.unwrap() as f32 / args.samplerate.unwrap() as f32
+                            };
+                            
     let fm_demod = freqdem::Freqdem::new(modulation_factor);
     let mut demod_out = vec![0_f32; resampler_output_len as usize];
 
