@@ -26,12 +26,20 @@
 extern crate demod;
 
 use demod::usage;
+use demod::liquid::firfilt;
+use demod::liquid::msresamp;
+use demod::liquid::freqdem;
+use demod::usage::DataType::{I16, F32};
+use demod::liquid::{Complex32};
 
 // import external modules
-use std::process::exit;
 use std::io;
 use std::io::Read;
 use std::io::Write;
+use std::mem;
+use std::slice;
+
+const BUFFER_SIZE: usize = 8192;
 
 macro_rules! println_stderr(
     ($($arg:tt)*) => (
@@ -46,4 +54,120 @@ fn main() {
     let args = usage::args();
 
     println_stderr!("demod {} andres.vahter@gmail.com\n\n", env!("CARGO_PKG_VERSION"));
+
+    // filter options
+    let filter_len = 64;
+    let filter_cutoff_freq = args.bandwidth.unwrap() as f32 / args.samplerate.unwrap() as f32;
+    let filter_attenuation = 70.0f32;
+
+    let filter = firfilt::FirFilterCrcf::kaiser(filter_len, filter_cutoff_freq, filter_attenuation, 0.0f32);
+    filter.set_scale(2.0f32 * filter_cutoff_freq);
+
+
+    // resampler options
+	let resampler_rate = args.resamplerate.unwrap() as f32 / args.samplerate.unwrap() as f32;
+
+    let resampler = msresamp::MsresampCrcf::new(resampler_rate, filter_attenuation);
+	let resampler_delay = resampler.get_delay();
+
+    // TODO, is it so?????
+    let num_samples = match args.inputtype.unwrap() {
+        I16 => {BUFFER_SIZE as u32 / 2},
+        F32 => {BUFFER_SIZE as u32 / 4},
+    };
+
+    // number of input samples (zero-padded)
+    let resampler_input_len = num_samples + resampler_delay.ceil() as u32 + 10;
+	// output buffer with extra padding
+	let resampler_output_len = (2f32 * resampler_input_len as f32 * resampler_rate as f32) as u32;
+
+    let mut input = vec![Complex32{real:0.0f32, imag:0.0f32}; resampler_input_len as usize];
+	let mut output = vec![Complex32{real:0.0f32, imag:0.0f32}; resampler_output_len as usize];
+	let mut resampler_output_count = 0;
+
+
+    // FM demodulator
+    let modulation_factor = args.fmargs.deviation.unwrap() as f32 / args.resamplerate.unwrap() as f32;
+    let fm_demod = freqdem::Freqdem::new(modulation_factor);
+    let mut demod_out = vec![0_f32; resampler_output_len as usize];
+
+
+    let mut stdin = io::stdin();
+    let mut stdout = io::stdout();
+    let mut inbuf: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
+
+    loop {
+        match stdin.read(&mut inbuf) {
+            Ok(size) => {
+                let mut sample_count: usize = 0;
+
+                match args.inputtype.unwrap() {
+                    I16 => {
+                        for b in inbuf.chunks(4) {
+                            let i: f32 = ((b[1] as i16) << 8 | b[0] as i16) as f32 / 32768.;
+                            let q: f32 = ((b[3] as i16) << 8 | b[2] as i16) as f32 / 32768.;
+
+                            input[sample_count] = Complex32{real:i, imag:q};
+                            filter.push(input[sample_count]);
+                            filter.execute(&mut input[sample_count]);
+                            sample_count += 1;
+                        }
+                    }
+                    F32 => {
+                        for b in inbuf.chunks(8) {
+                            let i: f32 = unsafe {mem::transmute::<u32, f32>(((b[3] as u32) << 24) | ((b[2] as u32) << 16) | ((b[1] as u32) << 8) | b[0] as u32)};
+                            let q: f32 = unsafe {mem::transmute::<u32, f32>(((b[7] as u32) << 24) | ((b[6] as u32) << 16) | ((b[5] as u32) << 8) | b[4] as u32)};
+
+                            input[sample_count] = Complex32{real:i, imag:q};
+                            filter.push(input[sample_count]);
+                            filter.execute(&mut input[sample_count]);
+                            sample_count += 1;
+                        }
+                    }
+                }
+
+                //let slice = unsafe {slice::from_raw_parts(input.as_ptr() as *const _, size * 2)};
+                //stdout.write(&slice).unwrap();
+
+                // resample
+                resampler.execute(&mut input, sample_count as u32, &mut output, &mut resampler_output_count);
+
+                //let slice = unsafe {slice::from_raw_parts(output.as_ptr() as *const _, (resampler_output_count * 8) as usize)};
+                //stdout.write(&slice).unwrap();
+
+                // demodulate
+                fm_demod.demodulate_block(&mut output, resampler_output_count, &mut demod_out);
+
+
+                match args.outputtype.unwrap() {
+                    I16 => {
+                        for i in 0 .. resampler_output_count as usize {
+                            if demod_out[i] > 1.0 {
+                                demod_out[i] = 1.0;
+                            }
+                            if demod_out[i] < -1.0 {
+                                demod_out[i] = -1.0;
+                            }
+
+                            let sample: [i16; 1] = [(demod_out[i] * 32767_f32) as i16];
+                            let slice = unsafe {slice::from_raw_parts(sample.as_ptr() as *const _, 2)};
+                            stdout.write(&slice).unwrap();
+                        }
+                    }
+                    F32 => {
+                        let slice = unsafe {slice::from_raw_parts(demod_out.as_ptr() as *const _, (resampler_output_count * 4) as usize)};
+                        stdout.write(&slice).unwrap();
+                    }
+                }
+
+                if size < BUFFER_SIZE {
+                    break;
+                }
+            }
+            Err(e) => {
+                println_stderr!("err: {:?}", e);
+                break;
+            }
+        }
+    }
 }
