@@ -22,10 +22,7 @@
  * SOFTWARE.
  */
 
-extern crate libc;
-
-#[macro_use]
-extern crate clap;
+#[macro_use] extern crate clap;
+extern crate liquid_dsp;
 
 pub mod usage;
-pub mod liquid;

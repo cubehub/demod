@@ -24,13 +24,8 @@
 
 // import local modules
 extern crate demod;
-
 use demod::usage;
-use demod::liquid::firfilt;
-use demod::liquid::msresamp;
-use demod::liquid::freqdem;
 use demod::usage::DataType::{I16, F32};
-use demod::liquid::{Complex32};
 
 // import external modules
 use std::io;
@@ -38,6 +33,12 @@ use std::io::Read;
 use std::io::Write;
 use std::mem;
 use std::slice;
+
+extern crate liquid_dsp;
+use liquid_dsp::firfilt;
+use liquid_dsp::msresamp;
+use liquid_dsp::freqdem;
+use liquid_dsp::{Complex32};
 
 const BUFFER_SIZE: usize = 8192;
 
