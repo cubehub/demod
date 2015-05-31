@@ -20,7 +20,7 @@ http://www.rust-lang.org/install.html
 ## build
 
     git clone https://github.com/cubehub/demod.git
-    cd demod/demod
+    cd demod
     cargo build --release
 
 ## install
