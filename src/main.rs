@@ -28,6 +28,7 @@ use demod::usage;
 use demod::usage::DataType::{I16, F32};
 
 // import external modules
+use std::process::exit;
 use std::io;
 use std::io::Read;
 use std::io::Write;
@@ -99,7 +100,7 @@ fn main() {
                             else {
                                 args.fmargs.deviation.unwrap() as f32 / args.samplerate.unwrap() as f32
                             };
-                            
+
     let fm_demod = freqdem::Freqdem::new(modulation_factor);
     let mut demod_out = vec![0_f32; resampler_output_len as usize];
 
@@ -163,12 +164,14 @@ fn main() {
 
                             let sample: [i16; 1] = [(demod_out[i] * 32767_f32) as i16];
                             let slice = unsafe {slice::from_raw_parts(sample.as_ptr() as *const _, 2)};
-                            stdout.write(&slice).unwrap();
+                            stdout.write(&slice).map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
+                            stdout.flush().map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
                         }
                     }
                     F32 => {
                         let slice = unsafe {slice::from_raw_parts(demod_out.as_ptr() as *const _, (resampler_output_count * 4) as usize)};
-                        stdout.write(&slice).unwrap();
+                        stdout.write(&slice).map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
+                        stdout.flush().map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
                     }
                 }
 
