@@ -155,11 +155,24 @@ fn main() {
                 match args.outputtype.unwrap() {
                     I16 => {
                         for i in 0 .. resampler_output_count as usize {
-                            if demod_out[i] > 1.0 {
-                                demod_out[i] = 1.0;
+                            if args.fmargs.squarewave.unwrap() {
+                                // make output square like, multimon-ng likes it more
+                                if demod_out[i] > 0.0 {
+                                    demod_out[i] = 1.0;
+                                }
+                                if demod_out[i] < 0.0 {
+                                    demod_out[i] = -1.0;
+                                }
+
                             }
-                            if demod_out[i] < -1.0 {
-                                demod_out[i] = -1.0;
+                            else {
+                                // clamp output
+                                if demod_out[i] > 1.0 {
+                                    demod_out[i] = 1.0;
+                                }
+                                if demod_out[i] < -1.0 {
+                                    demod_out[i] = -1.0;
+                                }
                             }
 
                             let sample: [i16; 1] = [(demod_out[i] * 32767_f32) as i16];

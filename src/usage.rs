@@ -52,6 +52,7 @@ pub enum Modulation {
 
 pub struct FmModulationArgs {
     pub deviation: Option<u32>,
+    pub squarewave: Option<bool>,
 }
 
 pub struct CommandArgs {
@@ -112,11 +113,16 @@ pub fn args() -> CommandArgs {
                 .subcommand(SubCommand::new("fm")
                     .about("FM demodulation")
 
-                    .arg(Arg::with_name("DEVIATION")
+                    .arg(Arg::with_name("FM_DEVIATION")
                         .long("deviation")
                         .help("FM deviation [Hz]")
                         .required(true)
-                        .takes_value(true)))
+                        .takes_value(true))
+                    .arg(Arg::with_name("FM_SQUAREWAVE_OUTPUT")
+                        .long("squarewave")
+                        .help("squarewave demodulator output, multimon-ng likes it more")
+                        .required(false)
+                        .takes_value(false)))
 
                 .get_matches();
 
@@ -131,6 +137,7 @@ pub fn args() -> CommandArgs {
 
                     fmargs : FmModulationArgs {
                         deviation: None,
+                        squarewave: None,
                     },
                 };
 
@@ -156,7 +163,8 @@ pub fn args() -> CommandArgs {
             }
 
             let submatches = matches.subcommand_matches("fm").unwrap();
-            args.fmargs.deviation = Some(value_t_or_exit!(submatches.value_of("DEVIATION"), u32));
+            args.fmargs.deviation = Some(value_t_or_exit!(submatches.value_of("FM_DEVIATION"), u32));
+            args.fmargs.squarewave = Some(submatches.is_present("FM_SQUAREWAVE_OUTPUT"));
         },
 
         _ => {
