@@ -102,7 +102,8 @@ fn main() {
                             };
 
     let fm_demod = freqdem::Freqdem::new(modulation_factor);
-    let mut demod_out = vec![0_f32; resampler_output_len as usize];
+    let mut demod_f32_out = vec![0_f32; resampler_output_len as usize];
+    let mut demod_i16_out = vec![0_i16; resampler_output_len as usize];
 
 
     let mut stdin = io::stdin();
@@ -149,7 +150,7 @@ fn main() {
                 //stdout.write(&slice).unwrap();
 
                 // demodulate
-                fm_demod.demodulate_block(&mut output, resampler_output_count, &mut demod_out);
+                fm_demod.demodulate_block(&mut output, resampler_output_count, &mut demod_f32_out);
 
 
                 match args.outputtype.unwrap() {
@@ -157,34 +158,35 @@ fn main() {
                         for i in 0 .. resampler_output_count as usize {
                             if args.fmargs.squarewave.unwrap() {
                                 // make output square like, multimon-ng likes it more
-                                if demod_out[i] > 0.0 {
-                                    demod_out[i] = 1.0;
+                                if demod_f32_out[i] > 0.0 {
+                                    demod_f32_out[i] = 1.0;
                                 }
-                                if demod_out[i] < 0.0 {
-                                    demod_out[i] = -1.0;
+                                if demod_f32_out[i] < 0.0 {
+                                    demod_f32_out[i] = -1.0;
                                 }
 
                             }
                             else {
                                 // clamp output
-                                if demod_out[i] > 1.0 {
-                                    demod_out[i] = 1.0;
+                                if demod_f32_out[i] > 1.0 {
+                                    demod_f32_out[i] = 1.0;
                                 }
-                                if demod_out[i] < -1.0 {
-                                    demod_out[i] = -1.0;
+                                if demod_f32_out[i] < -1.0 {
+                                    demod_f32_out[i] = -1.0;
                                 }
                             }
 
-                            let sample: [i16; 1] = [(demod_out[i] * 32767_f32) as i16];
-                            let slice = unsafe {slice::from_raw_parts(sample.as_ptr() as *const _, 2)};
-                            stdout.write(&slice).map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
-                            stdout.flush().map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
+                            demod_i16_out[i] = (demod_f32_out[i] * 32767_f32) as i16;
                         }
+
+                        let slice = unsafe {slice::from_raw_parts(demod_i16_out.as_ptr() as *const _, (resampler_output_count * 2) as usize)};
+                        stdout.write(&slice).map_err(|e|{println_stderr!("demod stdout.write error: {}", e); exit(1);});
+                        stdout.flush().map_err(|e|{println_stderr!("demod stdout.flush error: {}", e); exit(1);});
                     }
                     F32 => {
-                        let slice = unsafe {slice::from_raw_parts(demod_out.as_ptr() as *const _, (resampler_output_count * 4) as usize)};
-                        stdout.write(&slice).map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
-                        stdout.flush().map_err(|e|{println_stderr!("stdout.write error: {:?}", e); exit(1);});
+                        let slice = unsafe {slice::from_raw_parts(demod_f32_out.as_ptr() as *const _, (resampler_output_count * 4) as usize)};
+                        stdout.write(&slice).map_err(|e|{println_stderr!("stdout.write error: {}", e); exit(1);});
+                        stdout.flush().map_err(|e|{println_stderr!("stdout.flush error: {}", e); exit(1);});
                     }
                 }
 
