@@ -3,6 +3,10 @@ Command line utility based on liquid-dsp for demodulating SDR IQ streams.
 Firstly it was written in C ([last commit to C version](https://github.com/cubehub/demod/commit/1b1736ec72adc5b36db951be41dceaf3badccea9)), however now it is rewritten in [rust](http://www.rust-lang.org).
 
 ## dependencies
+
+### [autoconf] 
+    sudo apt-get install autoconf
+
 ### [liquid-dsp](https://github.com/jgaeddert/liquid-dsp)
     git clone git://github.com/jgaeddert/liquid-dsp.git
     cd liquid-dsp
