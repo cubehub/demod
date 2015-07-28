@@ -1,10 +1,11 @@
 [package]
 name = "demod"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["Andres Vahter <andres.vahter@gmail.com>"]
 
 [dependencies]
 clap = "*"
+num = "*"
 
 [dependencies.liquid_dsp]
 git = "https://github.com/cubehub/rust-liquid-dsp.git"

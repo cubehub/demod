@@ -39,7 +39,10 @@ extern crate liquid_dsp;
 use liquid_dsp::firfilt;
 use liquid_dsp::msresamp;
 use liquid_dsp::freqdem;
-use liquid_dsp::{Complex32};
+//use liquid_dsp::{Complex::<f32>::new(};
+
+extern crate num;
+use num::complex::Complex;
 
 const BUFFER_SIZE: usize = 8192;
 
@@ -88,8 +91,8 @@ fn main() {
 	// output buffer with extra padding
 	let resampler_output_len = (2f32 * resampler_input_len as f32 * resampler_rate as f32) as u32;
 
-    let mut input = vec![Complex32{real:0.0f32, imag:0.0f32}; resampler_input_len as usize];
-	let mut output = vec![Complex32{real:0.0f32, imag:0.0f32}; resampler_output_len as usize];
+    let mut input = vec![Complex::<f32>::new(0.0f32, 0.0f32); resampler_input_len as usize];
+	let mut output = vec![Complex::<f32>::new(0.0f32, 0.0f32); resampler_output_len as usize];
 	let mut resampler_output_count = 0;
 
 
@@ -121,7 +124,7 @@ fn main() {
                             let i: f32 = ((b[1] as i16) << 8 | b[0] as i16) as f32 / 32768.;
                             let q: f32 = ((b[3] as i16) << 8 | b[2] as i16) as f32 / 32768.;
 
-                            input[sample_count] = Complex32{real:i, imag:q};
+                            input[sample_count] = Complex::<f32>::new(i, q);
                             filter.push(input[sample_count]);
                             filter.execute(&mut input[sample_count]);
                             sample_count += 1;
@@ -132,7 +135,7 @@ fn main() {
                             let i: f32 = unsafe {mem::transmute::<u32, f32>(((b[3] as u32) << 24) | ((b[2] as u32) << 16) | ((b[1] as u32) << 8) | b[0] as u32)};
                             let q: f32 = unsafe {mem::transmute::<u32, f32>(((b[7] as u32) << 24) | ((b[6] as u32) << 16) | ((b[5] as u32) << 8) | b[4] as u32)};
 
-                            input[sample_count] = Complex32{real:i, imag:q};
+                            input[sample_count] = Complex::<f32>::new(i, q);
                             filter.push(input[sample_count]);
                             filter.execute(&mut input[sample_count]);
                             sample_count += 1;
