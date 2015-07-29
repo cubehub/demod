@@ -1,9 +1,9 @@
 [root]
 name = "demod"
-version = "0.9.3"
+version = "0.9.4"
 dependencies = [
  "clap 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid_dsp 0.1.1 (git+https://github.com/cubehub/rust-liquid-dsp.git)",
+ "liquid_dsp 0.2.0 (git+https://github.com/cubehub/rust-liquid-dsp.git)",
  "num 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -28,8 +28,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "liquid_dsp"
-version = "0.1.1"
-source = "git+https://github.com/cubehub/rust-liquid-dsp.git#a616f10a30512d784769eed85546e6c1494c7094"
+version = "0.2.0"
+source = "git+https://github.com/cubehub/rust-liquid-dsp.git#34187a094b91eda994a756a983472c8709d46bc2"
 dependencies = [
  "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
