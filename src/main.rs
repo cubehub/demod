@@ -186,5 +186,9 @@ fn main() {
                 stdout.flush().map_err(|e|{println_stderr!("stdout.flush error: {}", e);}).unwrap();
             }
         }
+
+        if invec.len() != BUFFER_SIZE {
+            break;
+        }
     }
 }
