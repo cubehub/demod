@@ -77,22 +77,13 @@ fn main() {
                         };
 
     let resampler = msresamp::MsresampCrcf::new(resampler_rate, filter_attenuation);
-	let resampler_delay = resampler.get_delay();
 
     let num_samples = match args.inputtype.unwrap() {
         I16 => {BUFFER_SIZE as u32 / 4},
         F32 => {BUFFER_SIZE as u32 / 8},
     };
 
-    // number of input samples (zero-padded)
-    let resampler_input_len = num_samples + resampler_delay.ceil() as u32 + 10;
-	// output buffer with extra padding
-	let resampler_output_len = (2f32 * resampler_input_len as f32 * resampler_rate as f32) as u32;
-
-    let mut input = vec![Complex::<f32>::new(0.0f32, 0.0f32); resampler_input_len as usize];
-	let mut output = vec![Complex::<f32>::new(0.0f32, 0.0f32); resampler_output_len as usize];
-	let mut resampler_output_count = 0;
-
+    let mut input = vec![Complex::<f32>::new(0.0f32, 0.0f32); num_samples as usize];
 
     // FM demodulator
     let modulation_factor = if args.resamplerate.is_some() {
@@ -103,9 +94,6 @@ fn main() {
                             };
 
     let fm_demod = freqdem::Freqdem::new(modulation_factor);
-    let mut demod_f32_out = vec![0_f32; resampler_output_len as usize];
-    let mut demod_i16_out = vec![0_i16; resampler_output_len as usize];
-
 
     let mut stdin = BufReader::with_capacity(BUFFER_SIZE*2, io::stdin());
     let mut stdout = BufWriter::new(io::stdout());
@@ -135,24 +123,20 @@ fn main() {
             }
         }
 
+        // filter
         filter.execute_block(&mut input[0..sample_count]);
 
-        //let slice = unsafe {slice::from_raw_parts(input.as_ptr() as *const _, size * 2)};
-        //stdout.write(&slice).unwrap();
-
         // resample
-        resampler_output_count = resampler.execute(&mut input[0..sample_count], &mut output);
-
-        //let slice = unsafe {slice::from_raw_parts(output.as_ptr() as *const _, (resampler_output_count * 8) as usize)};
-        //stdout.write(&slice).unwrap();
+        let resampler_output = resampler.resample(&mut input[0..sample_count]);
+        let resampler_output_len = resampler_output.len();
 
         // demodulate
-        fm_demod.demodulate_block(&mut output, resampler_output_count, &mut demod_f32_out);
-
+        let mut demod_f32_out = fm_demod.demodulate_block(&resampler_output);
 
         match args.outputtype.unwrap() {
             I16 => {
-                for i in 0 .. resampler_output_count as usize {
+                let mut demod_i16_out = vec![0_i16; resampler_output_len];
+                for i in 0 .. resampler_output_len {
                     if args.fmargs.squarewave.unwrap() {
                         // make output square like, multimon-ng likes it more
                         if demod_f32_out[i] > 0.0 {
@@ -161,7 +145,6 @@ fn main() {
                         if demod_f32_out[i] < 0.0 {
                             demod_f32_out[i] = -1.0;
                         }
-
                     }
                     else {
                         // clamp output
@@ -176,12 +159,12 @@ fn main() {
                     demod_i16_out[i] = (demod_f32_out[i] * 32767_f32) as i16;
                 }
 
-                let slice = unsafe {slice::from_raw_parts(demod_i16_out.as_ptr() as *const _, (resampler_output_count * 2) as usize)};
+                let slice = unsafe {slice::from_raw_parts(demod_i16_out.as_ptr() as *const _, (resampler_output_len * 2) as usize)};
                 stdout.write(&slice).map_err(|e|{println_stderr!("demod stdout.write error: {}", e);}).unwrap();
                 stdout.flush().map_err(|e|{println_stderr!("demod stdout.flush error: {}", e);}).unwrap();
             }
             F32 => {
-                let slice = unsafe {slice::from_raw_parts(demod_f32_out.as_ptr() as *const _, (resampler_output_count * 4) as usize)};
+                let slice = unsafe {slice::from_raw_parts(demod_f32_out.as_ptr() as *const _, (resampler_output_len * 4) as usize)};
                 stdout.write(&slice).map_err(|e|{println_stderr!("stdout.write error: {}", e);}).unwrap();
                 stdout.flush().map_err(|e|{println_stderr!("stdout.flush error: {}", e);}).unwrap();
             }
