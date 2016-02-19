@@ -4,10 +4,10 @@ Firstly it was written in C ([last commit to C version](https://github.com/cubeh
 
 ## dependencies
 
-### [autoconf] 
+#### autoconf
     sudo apt-get install autoconf
 
-### [liquid-dsp](https://github.com/jgaeddert/liquid-dsp)
+#### [liquid-dsp](https://github.com/jgaeddert/liquid-dsp)
     git clone git://github.com/jgaeddert/liquid-dsp.git
     cd liquid-dsp
     ./bootstrap.sh
@@ -16,7 +16,7 @@ Firstly it was written in C ([last commit to C version](https://github.com/cubeh
     sudo make install
 
 
-### rust
+#### rust
 http://www.rust-lang.org/install.html
 
     curl -sSf https://static.rust-lang.org/rustup.sh | sh
@@ -28,11 +28,11 @@ http://www.rust-lang.org/install.html
     cargo build --release
 
 ## install
-### mac os x
+#### mac os x
 
     cp target/release/demod /usr/local/bin/
 
-### linux
+#### linux
 
     sudo cp target/release/demod /usr/local/bin/
 
