@@ -110,7 +110,7 @@ pub fn args() -> CommandArgs {
                     .required(true)
                     .takes_value(true))
 
-                .subcommand(SubCommand::new("fm")
+                .subcommand(SubCommand::with_name("fm")
                     .about("FM demodulation")
 
                     .arg(Arg::with_name("FM_DEVIATION")
