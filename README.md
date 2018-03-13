@@ -19,7 +19,7 @@ Firstly it was written in C ([last commit to C version](https://github.com/cubeh
 #### rust
 http://www.rust-lang.org/install.html
 
-    curl -sSf https://static.rust-lang.org/rustup.sh | sh
+    curl https://sh.rustup.rs -sSf | sh
 
 ## build
 
