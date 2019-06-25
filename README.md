@@ -14,6 +14,7 @@ Firstly it was written in C ([last commit to C version](https://github.com/cubeh
     ./configure
     make
     sudo make install
+    sudo ldconfig
 
 
 #### rust
