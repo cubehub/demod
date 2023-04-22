@@ -8,7 +8,7 @@ Firstly it was written in C ([last commit to C version](https://github.com/cubeh
     sudo apt-get install autoconf
 
 #### [liquid-dsp](https://github.com/jgaeddert/liquid-dsp)
-    git clone git://github.com/jgaeddert/liquid-dsp.git
+    git clone git@github.com:jgaeddert/liquid-dsp
     cd liquid-dsp
     ./bootstrap.sh
     ./configure
